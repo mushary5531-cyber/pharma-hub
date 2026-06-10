@@ -8,12 +8,14 @@ async function loadLecture() {
   const id = params.get('id');
   if (!id) { location.href = 'index.html'; return; }
 
-  // Determine exam folder from id prefix
-  const exam = id.split('-')[0]; // mid1, mid2, final
-  const slug = id.split('-').slice(2).join('-');
-
   try {
-    const res = await fetch(`data/${exam}/${slug}.json`);
+    const indexRes = await fetch('data/index.json');
+    if (!indexRes.ok) throw new Error('index not found');
+    const index = await indexRes.json();
+    const entry = index.lectures.find(l => l.id === id);
+    if (!entry) throw new Error('not found');
+
+    const res = await fetch(`data/${entry.exam}/${entry.slug}.json`);
     if (!res.ok) throw new Error('not found');
     lectureData = await res.json();
     renderLecture();
